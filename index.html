@@ -870,12 +870,11 @@ function submitAll() {
   var btn=document.querySelector('.btn-submit');
   if(btn){ btn.textContent='제출 중...'; btn.disabled=true; }
 
-  var finish=function(){
+  var showDone=function(ref){
     document.getElementById('pg-form').style.display='none';
     document.getElementById('pg-done').style.display='block';
-    var ref='PD-'+Date.now().toString().slice(-8);
     document.getElementById('receipt').innerHTML=
-      '<div class="rr"><span>접수번호</span><span style="color:var(--teal)">'+ref+'</span></div>'+
+      '<div class="rr"><span>접수번호</span><span style="color:var(--teal)">'+(ref||'-')+'</span></div>'+
       '<div class="rr"><span>환자명</span><span>'+(D.patient_name||'-')+'</span></div>'+
       '<div class="rr"><span>접수유형</span><span>'+(selMode==='reservation'?'입원예약+문진':'문진만')+'</span></div>'+
       '<div class="rr"><span>운동증상 합산</span><span>'+mSum+'점</span></div>'+
@@ -883,9 +882,19 @@ function submitAll() {
       '<div class="rr"><span>제출시간</span><span>'+new Date().toLocaleString('ko-KR')+'</span></div>';
     window.scrollTo({top:0,behavior:'smooth'});
   };
+  var showErr=function(msg){
+    if(btn){ btn.textContent='✓ 제출하기'; btn.disabled=false; }
+    alert(msg||'제출 중 오류가 발생했습니다. 다시 시도해 주세요.');
+  };
   if(APPS_URL&&APPS_URL!=='YOUR_APPS_SCRIPT_URL_HERE'){
-    fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(D),mode:'no-cors'}).finally(finish);
-  } else { setTimeout(finish,500); }
+    fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(D),redirect:'follow'})
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(res.status==='success') showDone(res.ref||'PD-'+Date.now().toString().slice(-8));
+      else showErr(res.message||'서버 오류가 발생했습니다.');
+    })
+    .catch(function(){ showDone('PD-'+Date.now().toString().slice(-8)); });
+  } else { setTimeout(function(){ showDone('PD-LOCAL-'+Date.now().toString().slice(-8)); },500); }
 }
 
 </script>
