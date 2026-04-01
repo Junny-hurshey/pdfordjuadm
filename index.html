@@ -96,6 +96,17 @@ textarea{resize:vertical;min-height:70px;line-height:1.6}
 .rr span:last-child{font-weight:700}
 .contact-box{background:var(--teal-l);border-radius:var(--r12);padding:1rem;font-size:.875em;color:var(--teal);text-align:left;line-height:1.9}
 @media(max-width:540px){.mode-grid{grid-template-columns:1fr}.logos img{height:42px}}
+.score-info{width:24px;height:24px;border-radius:50%;border:1px solid var(--bdr);background:var(--surf);cursor:pointer;font-size:.75em;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:2px;vertical-align:middle}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:1rem}
+.modal-bg.show{display:flex}
+.modal-box{background:var(--surf);border-radius:var(--r16);max-width:420px;width:100%;max-height:80vh;overflow-y:auto;padding:1.25rem;position:relative}
+.modal-close{position:absolute;top:.75rem;right:.75rem;width:30px;height:30px;border:none;background:var(--bg);border-radius:50%;font-size:1.125em;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.modal-title{font-size:1em;font-weight:700;margin-bottom:.875rem;padding-right:2rem}
+.modal-tbl{width:100%;border-collapse:collapse;font-size:.8125em}
+.modal-tbl th{background:var(--teal);color:#fff;padding:.5rem .625rem;text-align:left;font-weight:600}
+.modal-tbl td{padding:.5rem .625rem;border-bottom:1px solid var(--bdr);line-height:1.5}
+.modal-tbl td:first-child{width:40px;text-align:center;font-weight:700}
+.modal-tbl tr:nth-child(even) td{background:var(--bg)}
 .ai-box{margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--bdr)}
 .ai-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:.75rem 1.25rem;border:none;border-radius:var(--r8);background:linear-gradient(135deg,#185fa5,#0f6e56);color:#fff;font-size:.9375em;font-weight:700;cursor:pointer;font-family:inherit;width:100%}
 .ai-btn:disabled{opacity:.5;cursor:not-allowed}
@@ -190,9 +201,53 @@ textarea{resize:vertical;min-height:70px;line-height:1.6}
 </div>
 </div>
 
+<div class="modal-bg" id="score-modal" onclick="closeScoreModal(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeScoreModal()">&times;</button>
+    <div class="modal-title" id="score-modal-title"></div>
+    <table class="modal-tbl" id="score-modal-tbl"></table>
+  </div>
+</div>
+
 <script>
 var APPS_URL = (window.APP_CONFIG && window.APP_CONFIG.APPS_SCRIPT_URL) || '';
 var API_KEY  = (window.APP_CONFIG && window.APP_CONFIG.GEMINI_API_KEY) || '';
+
+/* ─── MDS-UPDRS 점수 설명 ─── */
+var SCORE_INFO = {
+  nm_sleep: {title:'수면장애',rows:['문제없음','수면문제 있으나 밤새 자는데 지장없음','밤새 자는데 약간 지장','상당한 지장이나 반 이상은 잠','거의 잠 못잠']},
+  nm_constipation: {title:'변비',rows:['변비없음','변비있으나 일상에 지장없음','일상에 약간 지장','상당한 지장이나 아주 못하지는 않음','보통 다른사람 도움 필요']},
+  nm_hyposmia: {title:'후각저하',rows:['문제없음','약간 저하되나 일상에 지장없음','일상에 약간 지장','일상에 상당한 지장','후각 거의 없음']},
+  nm_fatigue: {title:'피로',rows:['피로없음','피로있으나 일상에 지장없음','일상에 어느정도 지장','일상에 매우 어렵게 하나 완전히 못하지는 않음','일상을 완전히 못하게 함']},
+  nm_cognition: {title:'인지기능',rows:['문제없음','손상 느끼나 일상에 실질적 지장없음','임상적으로 명백하나 약간 지장만','일상에 방해되나 완전히 못하지는 않음','일상을 완전히 못하게 함']},
+  nm_depression: {title:'우울/불안',rows:['없음','에피소드 있으나 하루이상 지속 안됨','여러날 지속되나 일상에 방해 안됨','일상에 방해되나 완전히 못하지는 않음','일상을 완전히 못하게 함']},
+  nm_pain: {title:'통증',rows:['불편없음','있으나 일상 가능','일상에 약간 문제','상당한 문제이나 완전히 못하지는 않음','일상을 못하게 함']},
+  nm_orthostasis: {title:'기립성 어지럼',rows:['없음','어지럽지만 일상에 지장없음','뭔가 잡아야 하나 눕지는 않아도 됨','기절·넘어짐 피하려 눕게 됨','기절하거나 넘어짐']},
+  nm_urinary: {title:'배뇨장애',rows:['문제없음','자주·급하게 마려우나 일상에 지장없음','일상에 약간 지장이나 실수는 없음','실수 포함 상당한 지장','기저귀 또는 방광튜브 필요']},
+  nm_swallow: {title:'연하곤란',rows:['문제없음','천천히 씹어야 하나 목에 안걸림','약·음식 특별 준비 필요','지난주 한번이상 목에 걸림','튜브 필요']},
+  motor_speech: {title:'말하기',rows:['문제없음','다시 반복 요청 안받음','가끔 다시 반복 요청받음','매일 반복 요청받음','대부분 알아들을수 없음']},
+  motor_tremor: {title:'떨림',rows:['없음','있으나 활동에 지장없음','몇몇 활동에 지장','많은 일상에 지장','대부분 활동에 지장']},
+  motor_brady: {title:'서동(느려짐)',rows:['없음','약간 느리나 지장없음','일상에 약간 지장','일상에 상당한 지장','대부분 활동 불가']},
+  motor_rigid: {title:'강직(뻣뻣함)',rows:['없음','경미','약간 있으나 동작 완성 가능','동작 완성에 노력 필요','동작 완성 불가']},
+  motor_gait: {title:'보행',rows:['문제없음','작은 이상 있으나 독립 보행','독립보행이나 상당한 이상','보조기구 필요','타인 도움 필요']},
+  motor_freezing: {title:'보행 동결',rows:['없음','잠깐 동결 후 곧 회복','동결 후 재보행 어려우나 도움불필요','가끔 보조기구·도움 필요','대부분 도움 필요']}
+};
+function openScoreModal(k) {
+  var info = SCORE_INFO[k];
+  if (!info) return;
+  document.getElementById('score-modal-title').textContent = info.title + ' — MDS-UPDRS 기준';
+  var html = '<tr><th>점수</th><th>설명</th></tr>';
+  for (var i = 0; i < info.rows.length; i++) {
+    html += '<tr><td>' + i + '</td><td>' + info.rows[i] + '</td></tr>';
+  }
+  document.getElementById('score-modal-tbl').innerHTML = html;
+  document.getElementById('score-modal').classList.add('show');
+}
+function closeScoreModal(e) {
+  if (!e || e.target === document.getElementById('score-modal')) {
+    document.getElementById('score-modal').classList.remove('show');
+  }
+}
 
 /* ─── 글씨 크기 ─── */
 function setFont(s) {
@@ -371,7 +426,8 @@ function fCheck(k,opts) {
 }
 function fScore(k,lbl) {
   var cur=D[k]||'-1', descs=['없음','경미','중등도','심함','매우심함'];
-  var h='<div class="field"><label class="field-label">'+lbl+'</label><div class="score-row">';
+  var hasInfo = SCORE_INFO[k] ? true : false;
+  var h='<div class="field"><label class="field-label">'+lbl+(hasInfo?' <button type="button" class="score-info" onclick="openScoreModal(\''+k+'\')">ℹ️</button>':'')+'</label><div class="score-row">';
   for(var i=0;i<=4;i++) h+='<button class="score-btn'+(cur===String(i)?' sel':'')+'" data-score="'+k+'" data-val="'+i+'">'+i+'</button>';
   h+='<button class="score-btn'+(cur==='-1'?' sel':'')+'" data-score="'+k+'" data-val="-1">?</button>';
   h+='</div><div class="score-desc" id="sd-'+k+'">'+(cur>=0&&cur<=4?descs[cur]:(cur==='-1'?'모름':''))+'</div></div>';
