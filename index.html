@@ -316,12 +316,12 @@ function fText(k,lbl,ph) {
 function fMic(k,lbl,ph) {
   return '<div class="field"><label class="field-label">'+lbl+'</label>'+
     '<div class="field-row"><input type="text" data-key="'+k+'" placeholder="'+ph+'" value="'+(D[k]||'')+'">'+
-    '<button class="mic" onclick="toggleMic(this,''+k+'')" title="음성입력">🎤</button></div></div>';
+    '<button class="mic" onclick="toggleMic(this,\''+k+'\')" title="음성입력">🎤</button></div></div>';
 }
 function fTaMic(k,lbl,ph) {
   return '<div class="field"><label class="field-label">'+lbl+'</label>'+
     '<div class="field-row"><textarea data-key="'+k+'" placeholder="'+ph+'">'+(D[k]||'')+'</textarea>'+
-    '<button class="mic" onclick="toggleMic(this,''+k+'')" title="음성입력">🎤</button></div></div>';
+    '<button class="mic" onclick="toggleMic(this,\''+k+'\')" title="음성입력">🎤</button></div></div>';
 }
 function fRadio(k,lbl,opts) {
   var h='<div class="field"><label class="field-label">'+lbl+'</label><div class="radio-group">';
