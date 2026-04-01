@@ -318,7 +318,6 @@ function updateStart() {
 /* ─── 파트 데이터 ─── */
 var D = {};
 var curPart = 1;
-var selMode = '';
 var PARTS_R = ['기본정보','현병력','과거력','약물','예약'];
 var PARTS_S = ['기본정보','현병력','과거력','약물'];
 var activeMic = null;
@@ -444,7 +443,7 @@ function fProd(k,icon,nm,q,isRbd) {
   return '<div class="field"><label class="field-label">'+icon+' '+nm+'</label>'+
     '<div class="field-hint">'+q+'</div>'+
     fRadioInline(k,[['yes','있음'],['no','없음/해당없음']])+
-    '<div class="sub-field" id="sf-'+k+'">'+(D[k]==='yes'?extra:'<div style=\"display:none\">'+extra+'</div>')+'</div></div>';
+    '<div class="sub-field" id="sf-'+k+'">'+extra+'</div></div>';
 }
 
 /* ─── 파트 렌더 ─── */
@@ -603,8 +602,12 @@ function aiAnalyzeP2() {
   if (!key) { alert('API 키가 설정되지 않았습니다.'); return; }
   var p2keys = ['first_abnormal_date','first_abnormal_symptom','first_motor_date','first_motor_type','motor_onset_side',
     'gut_brain_onset','pd_diagnosis_date','pd_diagnosis_hospital','levodopa_start_date',
-    'constipation','constipation_onset','hyposmia','hyposmia_onset','rbd','rbd_onset','rbd_confirmed',
-    'orthostasis','orthostasis_onset','urinary','urinary_onset','sexual','sexual_onset',
+    'constipation','constipation_before_motor','constipation_onset',
+    'hyposmia','hyposmia_before_motor','hyposmia_onset',
+    'rbd','rbd_before_motor','rbd_onset','rbd_witnessed','rbd_psg',
+    'orthostasis','orthostasis_before_motor','orthostasis_onset',
+    'urinary','urinary_before_motor','urinary_onset',
+    'sexual','sexual_before_motor','sexual_onset',
     'motor_speech','motor_tremor','motor_brady','motor_rigid','motor_gait','motor_freezing',
     'nm_sleep','nm_constipation','nm_hyposmia','nm_fatigue','nm_cognition','nm_depression','nm_pain','nm_orthostasis','nm_urinary','nm_swallow'];
   var collected = {};
@@ -778,11 +781,18 @@ function rxApply() {
   if (ta) ta.value = D.other_meds;
   // 레보도파 자동 입력
   if (rx.parkinson && rx.parkinson.length) {
-    var levo = rx.parkinson.filter(function(d) { return /levodopa|레보도파|퍼킨|명도파|스탈레보|시네메트|마도파/i.test(d.name + d.component); });
+    var levo = rx.parkinson.filter(function(d) { return /levodopa|레보도파|퍼킨|명도파|스탈레보|스타레보|시네메트|마도파/i.test(d.name + d.component); });
     if (levo.length) {
       D.levo_yn = 'yes';
       D.levo_name = levo.map(function(d) { return d.name; }).join(', ');
       D.levo_dose = levo.map(function(d) { return d.dose_mg + 'mg ' + d.times + '회/일'; }).join(', ');
+      // UI 반영
+      var levoRadio = document.querySelector('input[name="levo_yn"][value="yes"]');
+      if (levoRadio) { levoRadio.checked = true; levoRadio.dispatchEvent(new Event('change',{bubbles:true})); }
+      var nameInput = document.querySelector('[data-key="levo_name"]');
+      if (nameInput) nameInput.value = D.levo_name;
+      var doseInput = document.querySelector('[data-key="levo_dose"]');
+      if (doseInput) doseInput.value = D.levo_dose;
     }
   }
   alert('약물 정보가 입력되었습니다.');
