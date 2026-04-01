@@ -96,6 +96,32 @@ textarea{resize:vertical;min-height:70px;line-height:1.6}
 .rr span:last-child{font-weight:700}
 .contact-box{background:var(--teal-l);border-radius:var(--r12);padding:1rem;font-size:.875em;color:var(--teal);text-align:left;line-height:1.9}
 @media(max-width:540px){.mode-grid{grid-template-columns:1fr}.logos img{height:42px}}
+.ai-box{margin-bottom:1rem}
+.ai-btn{display:inline-flex;align-items:center;gap:6px;padding:.75rem 1.25rem;border:none;border-radius:var(--r8);background:linear-gradient(135deg,#185fa5,#0f6e56);color:#fff;font-size:.9375em;font-weight:700;cursor:pointer;font-family:inherit;width:100%}
+.ai-btn:disabled{opacity:.5;cursor:not-allowed}
+.ai-loading{display:none;align-items:center;justify-content:center;gap:8px;padding:1rem;font-size:.875em;color:var(--tx2)}
+.ai-loading.show{display:flex}
+.ai-result{display:none;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r12);padding:1rem;margin-bottom:1rem;font-size:.875em;line-height:1.8}
+.ai-result.show{display:block}
+.ai-result pre{white-space:pre-wrap;word-break:break-word;font-family:inherit;margin:0}
+.ai-actions{display:flex;gap:8px;margin-top:.75rem}
+.ai-copy{flex:1;padding:.625rem;border:1.5px solid var(--bdr);border-radius:var(--r8);background:var(--surf);color:var(--tx2);font-size:.875em;cursor:pointer;font-family:inherit}
+.ai-apply{flex:1;padding:.625rem;border:none;border-radius:var(--r8);background:var(--teal);color:#fff;font-size:.875em;font-weight:700;cursor:pointer;font-family:inherit}
+.rx-box{border:2px dashed var(--bdr2);border-radius:var(--r12);padding:1.25rem;text-align:center;margin-bottom:1rem;background:var(--bg)}
+.rx-btn{display:inline-flex;align-items:center;gap:6px;padding:.75rem 1.5rem;border:none;border-radius:var(--r8);background:var(--blue);color:#fff;font-size:.9375em;font-weight:700;cursor:pointer;font-family:inherit}
+.rx-warn{font-size:.75em;color:var(--red);margin-top:.5rem}
+.rx-preview{max-width:100%;max-height:200px;border-radius:var(--r8);margin-top:.75rem;display:none}
+.rx-loading{display:none;align-items:center;justify-content:center;gap:8px;padding:1rem;font-size:.875em;color:var(--tx2)}
+.rx-loading.show{display:flex}
+.rx-result{display:none;margin-bottom:1rem}
+.rx-result.show{display:block}
+.rx-table{width:100%;border-collapse:collapse;font-size:.8125em;margin-bottom:.75rem}
+.rx-table th{background:var(--teal);color:#fff;padding:.5rem .625rem;text-align:left;font-weight:600}
+.rx-table td{padding:.5rem .625rem;border-bottom:1px solid var(--bdr)}
+.rx-table tr:nth-child(even) td{background:var(--bg)}
+.rx-cat{font-size:.875em;font-weight:700;margin:.75rem 0 .375rem;color:var(--teal)}
+.rx-led{background:var(--blue-l);border-radius:var(--r8);padding:.75rem 1rem;font-size:.9375em;font-weight:700;color:var(--blue);text-align:center;margin-bottom:.75rem}
+.rx-use-btn{width:100%;padding:.75rem;border:none;border-radius:var(--r8);background:var(--teal);color:#fff;font-size:.9375em;font-weight:700;cursor:pointer;font-family:inherit}
 </style>
 </head>
 <body>
@@ -381,6 +407,11 @@ function renderP1() {
 function renderP2() {
   return '<div class="form-sec"><div class="form-ttl">PART 2 · 현병력 및 증상</div>'+
     '<div style="background:var(--blue-l);border-radius:var(--r8);padding:.75rem 1rem;margin-bottom:1rem;font-size:.875em;color:#0c447c;line-height:1.7">🕐 처음 이상 인지 → 전구증상 → 첫 운동증상 → 진단 → 레보도파 순서로 확인합니다.</div>'+
+    '<div class="ai-box">'+
+      '<button type="button" class="ai-btn" id="ai-p2-btn" onclick="aiAnalyzeP2()">🤖 AI 현병력 분석</button>'+
+    '</div>'+
+    '<div class="ai-loading" id="ai-p2-loading">🤖 AI가 현병력을 분석하고 있습니다...</div>'+
+    '<div class="ai-result" id="ai-p2-result"></div>'+
     fMic('first_abnormal_date','처음 이상하다고 느끼신 시점','예: 2018년경, 5년 전')+
     fTaMic('first_abnormal_symptom','그때 처음 느끼신 증상','예: 오른손 떨림, 냄새를 못 맡게 됨')+
     fMic('first_motor_date','첫 운동증상 시작 시점','손 떨림·동작 느려짐·걸음 이상 등')+
@@ -418,6 +449,14 @@ function renderP3() {
 
 function renderP4() {
   return '<div class="form-sec"><div class="form-ttl">PART 4 · 약물</div>'+
+    '<div class="rx-box">'+
+      '<button type="button" class="rx-btn" onclick="rxUpload()">📷 처방전 촬영/업로드</button>'+
+      '<input type="file" id="rx-file" accept="image/*" capture="environment" style="display:none" onchange="rxProcess(this)">'+
+      '<div class="rx-warn">⚠️ 이름/주민번호를 가리고 촬영해 주세요</div>'+
+      '<img id="rx-preview" class="rx-preview">'+
+    '</div>'+
+    '<div class="rx-loading" id="rx-loading">⏳ 처방전 분석 중...</div>'+
+    '<div class="rx-result" id="rx-result"></div>'+
     fRadio('levo_yn','레보도파 제제 복용 여부',[['yes','복용 중'],['no','미복용']])+
     '<div class="sub-field" id="sf-levo">'+
       fMic('levo_name','약품명','예: 퍼킨정, 명도파정, 스탈레보')+
@@ -498,6 +537,207 @@ function bindAll() {
   ['constipation','hyposmia','rbd','orthostasis','urinary','sexual'].forEach(function(k){
     if(D[k]==='yes'){ var sf=document.getElementById('sf-'+k); if(sf) sf.classList.add('show'); }
   });
+}
+
+/* ─── AI 현병력 분석 ─── */
+function aiAnalyzeP2() {
+  var key = (window.APP_CONFIG && window.APP_CONFIG.GEMINI_API_KEY) || '';
+  if (!key) { alert('API 키가 설정되지 않았습니다.'); return; }
+  var p2keys = ['first_abnormal_date','first_abnormal_symptom','first_motor_date','first_motor_type','motor_onset_side',
+    'gut_brain_onset','pd_diagnosis_date','pd_diagnosis_hospital','levodopa_start_date',
+    'constipation','constipation_onset','hyposmia','hyposmia_onset','rbd','rbd_onset','rbd_confirmed',
+    'orthostasis','orthostasis_onset','urinary','urinary_onset','sexual','sexual_onset',
+    'motor_speech','motor_tremor','motor_brady','motor_rigid','motor_gait','motor_freezing',
+    'nm_sleep','nm_constipation','nm_hyposmia','nm_fatigue','nm_cognition','nm_depression','nm_pain','nm_orthostasis','nm_urinary','nm_swallow'];
+  var collected = {};
+  var hasData = false;
+  p2keys.forEach(function(k) { if (D[k] != null && D[k] !== '') { collected[k] = D[k]; hasData = true; } });
+  if (!hasData) { alert('분석할 데이터가 없습니다. 현병력 항목을 먼저 입력해 주세요.'); return; }
+  var btn = document.getElementById('ai-p2-btn');
+  var loading = document.getElementById('ai-p2-loading');
+  var result = document.getElementById('ai-p2-result');
+  btn.disabled = true;
+  loading.classList.add('show');
+  result.classList.remove('show');
+  var prompt = '파킨슨병 환자 현병력 데이터를 분석해줘. 반드시 한국어로 답해.\n' +
+    '진단하지 말고 패턴만 기술해. body-first/brain-first 표현 금지.\n' +
+    '입력 데이터: ' + JSON.stringify(collected) + '\n' +
+    '출력 형식:\n' +
+    '## 시간축 요약\n(처음이상~진단~레보도파 시작까지 타임라인)\n\n' +
+    '## 전구증상 패턴\n(운동증상 대비 선후관계 분석)\n\n' +
+    '## PI 자동 생성 문장\n(의료기록용 현병력 서술, 전문적이고 간결하게)\n\n' +
+    '## 주의사항\n(의료진 참고용 특이사항)';
+  var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=' + key;
+  fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ contents: [{parts: [{text: prompt}]}] })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    btn.disabled = false;
+    loading.classList.remove('show');
+    try {
+      var txt = data.candidates[0].content.parts[0].text;
+      window._aiP2Text = txt;
+      var html = '<pre>' + txt.replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/^## (.+)$/gm,'<strong style="color:var(--teal);font-size:1em">$1</strong>')
+        + '</pre>';
+      html += '<div class="ai-actions">';
+      html += '<button type="button" class="ai-copy" onclick="aiCopyP2()">📋 복사</button>';
+      html += '<button type="button" class="ai-apply" onclick="aiApplyP2()">이 내용을 현병력에 반영</button>';
+      html += '</div>';
+      result.innerHTML = html;
+      result.classList.add('show');
+    } catch(e) {
+      result.innerHTML = '<div style="color:var(--red);padding:.75rem">분석 실패. 데이터를 더 입력한 뒤 다시 시도해 주세요.</div>';
+      result.classList.add('show');
+    }
+  })
+  .catch(function() {
+    btn.disabled = false;
+    loading.classList.remove('show');
+    result.innerHTML = '<div style="color:var(--red);padding:.75rem">네트워크 오류가 발생했습니다.</div>';
+    result.classList.add('show');
+  });
+}
+function aiCopyP2() {
+  var txt = window._aiP2Text || '';
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(txt).then(function() { alert('클립보드에 복사되었습니다.'); });
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); alert('클립보드에 복사되었습니다.');
+  }
+}
+function aiApplyP2() {
+  var txt = window._aiP2Text || '';
+  var piMatch = txt.match(/## PI 자동 생성 문장\s*\n([\s\S]*?)(?=\n## |$)/);
+  if (piMatch) {
+    var pi = piMatch[1].trim();
+    D.first_abnormal_symptom = (D.first_abnormal_symptom ? D.first_abnormal_symptom + '\n\n[AI 분석]\n' : '') + pi;
+    var ta = document.querySelector('textarea[data-key="first_abnormal_symptom"]');
+    if (ta) ta.value = D.first_abnormal_symptom;
+  }
+  alert('AI 분석 내용이 현병력에 반영되었습니다.');
+}
+
+/* ─── 처방전 촬영 ─── */
+function rxUpload() { document.getElementById('rx-file').click(); }
+function rxProcess(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById('rx-preview');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    var base64 = e.target.result.split(',')[1];
+    var mime = file.type || 'image/jpeg';
+    rxAnalyze(base64, mime);
+  };
+  reader.readAsDataURL(file);
+}
+function rxAnalyze(base64, mime) {
+  var key = (window.APP_CONFIG && window.APP_CONFIG.GEMINI_API_KEY) || '';
+  if (!key) { alert('API 키가 설정되지 않았습니다.'); return; }
+  var loading = document.getElementById('rx-loading');
+  var result = document.getElementById('rx-result');
+  loading.classList.add('show');
+  result.classList.remove('show');
+  var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=' + key;
+  var prompt = '이 처방전에서 약물명(한글+영문), 1회용량(mg), 1일횟수를 JSON으로 추출해줘. ' +
+    '파킨슨 약물(레보도파/도파민작용제/MAO-B억제제)과 기타 약물로 분류하고 ' +
+    'Jost 2023 기준 LED도 계산해줘. ' +
+    '형식: {"parkinson":[{"name":"한글명","component":"영문성분명","dose_mg":숫자,"times":숫자,"led":숫자}], ' +
+    '"others":[{"name":"한글명","component":"영문성분명","dose_mg":숫자,"times":숫자,"purpose":"용도"}], ' +
+    '"total_led":숫자} JSON만 출력해.';
+  fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      contents: [{parts: [
+        {text: prompt},
+        {inlineData: {mimeType: mime, data: base64}}
+      ]}]
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    loading.classList.remove('show');
+    try {
+      var txt = data.candidates[0].content.parts[0].text;
+      var match = txt.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error('JSON not found');
+      var rx = JSON.parse(match[0]);
+      rxShowResult(rx);
+    } catch(e) {
+      result.innerHTML = '<div style="color:var(--red);font-size:.875em;padding:.75rem">분석 실패: 처방전을 더 선명하게 촬영해 주세요.</div>';
+      result.classList.add('show');
+    }
+  })
+  .catch(function() {
+    loading.classList.remove('show');
+    result.innerHTML = '<div style="color:var(--red);font-size:.875em;padding:.75rem">네트워크 오류가 발생했습니다.</div>';
+    result.classList.add('show');
+  });
+}
+function rxShowResult(rx) {
+  var html = '';
+  if (rx.parkinson && rx.parkinson.length) {
+    html += '<div class="rx-cat">파킨슨 약물</div>';
+    html += '<table class="rx-table"><tr><th>약물명</th><th>성분</th><th>용량</th><th>횟수</th><th>LED</th></tr>';
+    rx.parkinson.forEach(function(d) {
+      html += '<tr><td>'+d.name+'</td><td>'+d.component+'</td><td>'+d.dose_mg+'mg</td><td>'+d.times+'회/일</td><td>'+d.led+'</td></tr>';
+    });
+    html += '</table>';
+  }
+  if (rx.others && rx.others.length) {
+    html += '<div class="rx-cat">기타 약물</div>';
+    html += '<table class="rx-table"><tr><th>약물명</th><th>성분</th><th>용량</th><th>횟수</th><th>용도</th></tr>';
+    rx.others.forEach(function(d) {
+      html += '<tr><td>'+d.name+'</td><td>'+d.component+'</td><td>'+d.dose_mg+'mg</td><td>'+d.times+'회/일</td><td>'+(d.purpose||'')+'</td></tr>';
+    });
+    html += '</table>';
+  }
+  if (rx.total_led != null) {
+    html += '<div class="rx-led">총 LED (Levodopa Equivalent Dose): ' + rx.total_led + ' mg/day</div>';
+  }
+  html += '<button type="button" class="rx-use-btn" onclick="rxApply()">이 데이터 사용하기</button>';
+  var result = document.getElementById('rx-result');
+  result.innerHTML = html;
+  result.classList.add('show');
+  window._rxData = rx;
+}
+function rxApply() {
+  var rx = window._rxData;
+  if (!rx) return;
+  var lines = [];
+  if (rx.parkinson) {
+    rx.parkinson.forEach(function(d) {
+      lines.push(d.name + '(' + d.component + ') ' + d.dose_mg + 'mg x' + d.times + '회');
+    });
+  }
+  if (rx.others) {
+    rx.others.forEach(function(d) {
+      lines.push(d.name + '(' + d.component + ') ' + d.dose_mg + 'mg x' + d.times + '회' + (d.purpose ? ' [' + d.purpose + ']' : ''));
+    });
+  }
+  if (rx.total_led != null) lines.push('총 LED: ' + rx.total_led + 'mg/day');
+  D.other_meds = lines.join('\n');
+  var ta = document.querySelector('textarea[data-key="other_meds"]');
+  if (ta) ta.value = D.other_meds;
+  // 레보도파 자동 입력
+  if (rx.parkinson && rx.parkinson.length) {
+    var levo = rx.parkinson.filter(function(d) { return /levodopa|레보도파|퍼킨|명도파|스탈레보|시네메트|마도파/i.test(d.name + d.component); });
+    if (levo.length) {
+      D.levo_yn = 'yes';
+      D.levo_name = levo.map(function(d) { return d.name; }).join(', ');
+      D.levo_dose = levo.map(function(d) { return d.dose_mg + 'mg ' + d.times + '회/일'; }).join(', ');
+    }
+  }
+  alert('약물 정보가 입력되었습니다.');
 }
 
 /* ─── 마이크 ─── */
