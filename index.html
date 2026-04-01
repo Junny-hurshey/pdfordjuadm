@@ -96,17 +96,18 @@ textarea{resize:vertical;min-height:70px;line-height:1.6}
 .rr span:last-child{font-weight:700}
 .contact-box{background:var(--teal-l);border-radius:var(--r12);padding:1rem;font-size:.875em;color:var(--teal);text-align:left;line-height:1.9}
 @media(max-width:540px){.mode-grid{grid-template-columns:1fr}.logos img{height:42px}}
-.ai-box{margin-bottom:1rem}
-.ai-btn{display:inline-flex;align-items:center;gap:6px;padding:.75rem 1.25rem;border:none;border-radius:var(--r8);background:linear-gradient(135deg,#185fa5,#0f6e56);color:#fff;font-size:.9375em;font-weight:700;cursor:pointer;font-family:inherit;width:100%}
+.ai-box{margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--bdr)}
+.ai-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:.75rem 1.25rem;border:none;border-radius:var(--r8);background:linear-gradient(135deg,#185fa5,#0f6e56);color:#fff;font-size:.9375em;font-weight:700;cursor:pointer;font-family:inherit;width:100%}
 .ai-btn:disabled{opacity:.5;cursor:not-allowed}
 .ai-loading{display:none;align-items:center;justify-content:center;gap:8px;padding:1rem;font-size:.875em;color:var(--tx2)}
 .ai-loading.show{display:flex}
-.ai-result{display:none;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r12);padding:1rem;margin-bottom:1rem;font-size:.875em;line-height:1.8}
+@keyframes ai-spin{to{transform:rotate(360deg)}}
+.ai-spinner{width:18px;height:18px;border:2.5px solid var(--bdr);border-top-color:var(--blue);border-radius:50%;animation:ai-spin .7s linear infinite;flex-shrink:0}
+.ai-result{display:none;background:var(--blue-l);border:1px solid #b8d4ed;border-radius:var(--r12);padding:1rem;margin-top:.75rem;font-size:.875em;line-height:1.8;color:#0c447c}
 .ai-result.show{display:block}
 .ai-result pre{white-space:pre-wrap;word-break:break-word;font-family:inherit;margin:0}
-.ai-actions{display:flex;gap:8px;margin-top:.75rem}
-.ai-copy{flex:1;padding:.625rem;border:1.5px solid var(--bdr);border-radius:var(--r8);background:var(--surf);color:var(--tx2);font-size:.875em;cursor:pointer;font-family:inherit}
-.ai-apply{flex:1;padding:.625rem;border:none;border-radius:var(--r8);background:var(--teal);color:#fff;font-size:.875em;font-weight:700;cursor:pointer;font-family:inherit}
+.ai-err{background:var(--red-l);border:1px solid #e8b4b4;border-radius:var(--r12);padding:1rem;margin-top:.75rem;font-size:.875em;color:var(--red)}
+.ai-copy{display:inline-flex;align-items:center;gap:4px;margin-top:.75rem;padding:.5rem 1rem;border:1.5px solid #b8d4ed;border-radius:var(--r8);background:#fff;color:#0c447c;font-size:.8125em;cursor:pointer;font-family:inherit}
 .rx-box{border:2px dashed var(--bdr2);border-radius:var(--r12);padding:1.25rem;text-align:center;margin-bottom:1rem;background:var(--bg)}
 .rx-btn{display:inline-flex;align-items:center;gap:6px;padding:.75rem 1.5rem;border:none;border-radius:var(--r8);background:var(--blue);color:#fff;font-size:.9375em;font-weight:700;cursor:pointer;font-family:inherit}
 .rx-warn{font-size:.75em;color:var(--red);margin-top:.5rem}
@@ -407,11 +408,6 @@ function renderP1() {
 function renderP2() {
   return '<div class="form-sec"><div class="form-ttl">PART 2 · 현병력 및 증상</div>'+
     '<div style="background:var(--blue-l);border-radius:var(--r8);padding:.75rem 1rem;margin-bottom:1rem;font-size:.875em;color:#0c447c;line-height:1.7">🕐 처음 이상 인지 → 전구증상 → 첫 운동증상 → 진단 → 레보도파 순서로 확인합니다.</div>'+
-    '<div class="ai-box">'+
-      '<button type="button" class="ai-btn" id="ai-p2-btn" onclick="aiAnalyzeP2()">🤖 AI 현병력 분석</button>'+
-    '</div>'+
-    '<div class="ai-loading" id="ai-p2-loading">🤖 AI가 현병력을 분석하고 있습니다...</div>'+
-    '<div class="ai-result" id="ai-p2-result"></div>'+
     fMic('first_abnormal_date','처음 이상하다고 느끼신 시점','예: 2018년경, 5년 전')+
     fTaMic('first_abnormal_symptom','그때 처음 느끼신 증상','예: 오른손 떨림, 냄새를 못 맡게 됨')+
     fMic('first_motor_date','첫 운동증상 시작 시점','손 떨림·동작 느려짐·걸음 이상 등')+
@@ -434,7 +430,13 @@ function renderP2() {
     '</div>'+
     '<div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--bdr)"><div class="form-ttl" style="border:none;padding:0;margin-bottom:.5rem">비운동증상 평가 (0=없음 ~ 4=매우심함)</div>'+
     fScore('nm_sleep','수면장애')+fScore('nm_constipation','변비')+fScore('nm_hyposmia','후각저하')+fScore('nm_fatigue','피로')+fScore('nm_cognition','인지기능')+fScore('nm_depression','우울/불안')+fScore('nm_pain','통증')+fScore('nm_orthostasis','기립성 어지럼')+fScore('nm_urinary','배뇨장애')+fScore('nm_swallow','연하곤란')+
-    '</div></div>';
+    '</div>'+
+    '<div class="ai-box">'+
+      '<button type="button" class="ai-btn" id="ai-p2-btn" onclick="aiAnalyzeP2()">🤖 AI 현병력 분석</button>'+
+      '<div class="ai-loading" id="ai-p2-loading"><div class="ai-spinner"></div> AI가 현병력을 분석하고 있습니다…</div>'+
+      '<div id="ai-p2-result"></div>'+
+    '</div>'+
+    '</div>';
 }
 
 function renderP3() {
@@ -558,20 +560,24 @@ function aiAnalyzeP2() {
   var result = document.getElementById('ai-p2-result');
   btn.disabled = true;
   loading.classList.add('show');
-  result.classList.remove('show');
-  var prompt = '파킨슨병 환자 현병력 데이터를 분석해줘. 반드시 한국어로 답해.\n' +
-    '진단하지 말고 패턴만 기술해. body-first/brain-first 표현 금지.\n' +
-    '입력 데이터: ' + JSON.stringify(collected) + '\n' +
-    '출력 형식:\n' +
-    '## 시간축 요약\n(처음이상~진단~레보도파 시작까지 타임라인)\n\n' +
-    '## 전구증상 패턴\n(운동증상 대비 선후관계 분석)\n\n' +
-    '## PI 자동 생성 문장\n(의료기록용 현병력 서술, 전문적이고 간결하게)\n\n' +
-    '## 주의사항\n(의료진 참고용 특이사항)';
+  result.className = '';
+  result.innerHTML = '';
+  var sysPrompt = '당신은 파킨슨병 전문 한의사입니다. 반드시 한국어로만 답하세요.\n' +
+    '절대 진단하지 마세요. body-first/brain-first 표현 금지.\n' +
+    '패턴 기술만 하세요: \'비운동증상이 운동증상보다 N년 선행\' 형식.\n' +
+    '입력된 현병력 데이터를 분석해서 아래 4가지를 출력하세요:\n' +
+    '1. 시간축 요약 (처음이상 → 전구증상 → 첫운동증상 → 진단 → 레보도파)\n' +
+    '2. 전구증상 패턴 (운동증상 대비 선후관계)\n' +
+    '3. PI 자동생성 (의료기록 형식, 3~5문장)\n' +
+    '4. 의료진 참고사항';
+  var userMsg = '환자 현병력 데이터:\n' + JSON.stringify(collected, null, 2);
   var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=' + key;
   fetch(url, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ contents: [{parts: [{text: prompt}]}] })
+    body: JSON.stringify({
+      contents: [{ role: 'user', parts: [{ text: sysPrompt + '\n\n' + userMsg }] }]
+    })
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
@@ -580,25 +586,22 @@ function aiAnalyzeP2() {
     try {
       var txt = data.candidates[0].content.parts[0].text;
       window._aiP2Text = txt;
-      var html = '<pre>' + txt.replace(/</g,'&lt;').replace(/>/g,'&gt;')
-        .replace(/^## (.+)$/gm,'<strong style="color:var(--teal);font-size:1em">$1</strong>')
-        + '</pre>';
-      html += '<div class="ai-actions">';
-      html += '<button type="button" class="ai-copy" onclick="aiCopyP2()">📋 복사</button>';
-      html += '<button type="button" class="ai-apply" onclick="aiApplyP2()">이 내용을 현병력에 반영</button>';
-      html += '</div>';
-      result.innerHTML = html;
-      result.classList.add('show');
+      var formatted = txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/^(#{1,3})\s+(.+)$/gm, function(m,h,t){ return '<strong style="color:#0c447c">'+t+'</strong>'; })
+        .replace(/^\*\*(.+?)\*\*/gm,'<strong>$1</strong>');
+      result.className = 'ai-result show';
+      result.innerHTML = '<pre>' + formatted + '</pre>' +
+        '<button type="button" class="ai-copy" onclick="aiCopyP2()">📋 복사</button>';
     } catch(e) {
-      result.innerHTML = '<div style="color:var(--red);padding:.75rem">분석 실패. 데이터를 더 입력한 뒤 다시 시도해 주세요.</div>';
-      result.classList.add('show');
+      result.className = 'ai-err';
+      result.innerHTML = '분석에 실패했습니다. 데이터를 더 입력한 뒤 다시 시도해 주세요.';
     }
   })
-  .catch(function() {
+  .catch(function(err) {
     btn.disabled = false;
     loading.classList.remove('show');
-    result.innerHTML = '<div style="color:var(--red);padding:.75rem">네트워크 오류가 발생했습니다.</div>';
-    result.classList.add('show');
+    result.className = 'ai-err';
+    result.innerHTML = '네트워크 오류가 발생했습니다. 인터넷 연결을 확인해 주세요.';
   });
 }
 function aiCopyP2() {
@@ -610,17 +613,6 @@ function aiCopyP2() {
     ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy');
     document.body.removeChild(ta); alert('클립보드에 복사되었습니다.');
   }
-}
-function aiApplyP2() {
-  var txt = window._aiP2Text || '';
-  var piMatch = txt.match(/## PI 자동 생성 문장\s*\n([\s\S]*?)(?=\n## |$)/);
-  if (piMatch) {
-    var pi = piMatch[1].trim();
-    D.first_abnormal_symptom = (D.first_abnormal_symptom ? D.first_abnormal_symptom + '\n\n[AI 분석]\n' : '') + pi;
-    var ta = document.querySelector('textarea[data-key="first_abnormal_symptom"]');
-    if (ta) ta.value = D.first_abnormal_symptom;
-  }
-  alert('AI 분석 내용이 현병력에 반영되었습니다.');
 }
 
 /* ─── 처방전 촬영 ─── */
