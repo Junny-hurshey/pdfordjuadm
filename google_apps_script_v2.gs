@@ -14,10 +14,23 @@
  */
 
 // ─── 설정 ───
-var SHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
+// 독립형 스크립트: 아래에 스프레드시트 ID 직접 입력
+// 스프레드시트에 바인딩된 스크립트: 빈 문자열로 두면 자동 감지
+var SHEET_ID = '';
+
+function getSS() {
+  if (SHEET_ID) return SpreadsheetApp.openById(SHEET_ID);
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (ss) return ss;
+  // 둘 다 없으면 새 스프레드시트 생성
+  ss = SpreadsheetApp.create('파킨슨 입원관리 데이터');
+  SHEET_ID = ss.getId();
+  Logger.log('새 스프레드시트 생성: ' + ss.getUrl());
+  return ss;
+}
 
 function getOrCreateSheet(name, headers) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = getSS();
   var sheet = ss.getSheetByName(name);
   if (!sheet) {
     sheet = ss.insertSheet(name);
