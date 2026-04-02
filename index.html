@@ -612,7 +612,10 @@ function aiAnalyzeP2() {
     'nm_sleep','nm_constipation','nm_hyposmia','nm_fatigue','nm_cognition','nm_depression','nm_pain','nm_orthostasis','nm_urinary','nm_swallow'];
   var collected = {};
   var hasData = false;
-  p2keys.forEach(function(k) { if (D[k] != null && D[k] !== '') { collected[k] = D[k]; hasData = true; } });
+  p2keys.forEach(function(k) {
+    var val = D[k];
+    if (val != null && val !== '' && val !== 'no' && val !== '-1') { collected[k] = val; hasData = true; }
+  });
   if (!hasData) { alert('분석할 데이터가 없습니다. 현병력 항목을 먼저 입력해 주세요.'); return; }
   var btn = document.getElementById('ai-p2-btn');
   var loading = document.getElementById('ai-p2-loading');
@@ -642,25 +645,37 @@ function aiAnalyzeP2() {
   .then(function(data) {
     btn.disabled = false;
     loading.classList.remove('show');
+    // API 에러 체크
+    if (data.error) {
+      result.className = 'ai-err';
+      result.innerHTML = 'API 오류: ' + (data.error.message || JSON.stringify(data.error));
+      return;
+    }
+    if (!data.candidates || !data.candidates.length) {
+      result.className = 'ai-err';
+      var reason = (data.promptFeedback && data.promptFeedback.blockReason) || '응답 없음';
+      result.innerHTML = 'AI 응답 차단: ' + reason + '. 입력 데이터를 확인해 주세요.';
+      return;
+    }
     try {
       var txt = data.candidates[0].content.parts[0].text;
       window._aiP2Text = txt;
       var formatted = txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
         .replace(/^(#{1,3})\s+(.+)$/gm, function(m,h,t){ return '<strong style="color:#0c447c">'+t+'</strong>'; })
-        .replace(/^\*\*(.+?)\*\*/gm,'<strong>$1</strong>');
+        .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
       result.className = 'ai-result show';
       result.innerHTML = '<pre>' + formatted + '</pre>' +
         '<button type="button" class="ai-copy" onclick="aiCopyP2()">📋 복사</button>';
     } catch(e) {
       result.className = 'ai-err';
-      result.innerHTML = '분석에 실패했습니다. 데이터를 더 입력한 뒤 다시 시도해 주세요.';
+      result.innerHTML = '응답 파싱 실패: ' + e.message + '<br><small>' + JSON.stringify(data).substring(0,200) + '</small>';
     }
   })
   .catch(function(err) {
     btn.disabled = false;
     loading.classList.remove('show');
     result.className = 'ai-err';
-    result.innerHTML = '네트워크 오류가 발생했습니다. 인터넷 연결을 확인해 주세요.';
+    result.innerHTML = '네트워크 오류: ' + (err.message || '인터넷 연결을 확인해 주세요.');
   });
 }
 function aiCopyP2() {
