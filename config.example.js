@@ -1,13 +1,13 @@
 /* 파킨슨 입원관리 시스템 - 설정 파일
-   이 파일만 수정하면 전체 시스템에 적용됩니다 */
+   이 파일을 config.js로 복사한 후 값을 입력하세요 */
 
 window.APP_CONFIG = {
 
   // Google AI Studio에서 발급: https://aistudio.google.com
-  GEMINI_API_KEY: 'AIzaSyD9oDQpGGdM0svaDVwjROyA4R6AcIulxhg',
+  GEMINI_API_KEY: '',
 
   // Apps Script 배포 후 받은 웹앱 URL
-  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyGASxYEZsrH_3hxbPnwDKy0q31Vk3RTDg9TDf9uJbFraymNi1R0NSUmcKxfgn_yOR2/exec',
+  APPS_SCRIPT_URL: '',
 
   // 병원 정보 (필요시 수정)
   HOSPITAL: {
