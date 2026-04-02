@@ -7,7 +7,7 @@ window.APP_CONFIG = {
   GEMINI_API_KEY: 'AIzaSyD9oDQpGGdM0svaDVwjROyA4R6AcIulxhg',
 
   // Apps Script 배포 후 받은 웹앱 URL
-  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxsIJTZqvhqyd1pvdYCNClk_-nH2VR9f_8tdd3Q-wyW-kNmQAWGx7KaLGYsMledNcVV/exec',
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyGASxYEZsrH_3hxbPnwDKy0q31Vk3RTDg9TDf9uJbFraymNi1R0NSUmcKxfgn_yOR2/exec',
 
   // 병원 정보 (필요시 수정)
   HOSPITAL: {
